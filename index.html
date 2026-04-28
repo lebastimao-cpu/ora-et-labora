@@ -6,6 +6,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#0b1220" />
 
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+
   <style>
     body {
       margin: 0;
@@ -13,31 +16,26 @@
       background: #020617;
       color: #e5e7eb;
     }
-
     header {
       padding: 1rem;
       text-align: center;
       background: linear-gradient(#0b1220, #020617);
       border-bottom: 1px solid #1f2937;
     }
-
     header h1 {
       margin: 0;
       font-size: 1.4rem;
       font-weight: 600;
     }
-
     header p {
       margin: .3rem 0 0;
-      color: #9ca3af;
+      color: #facc15;
       font-size: .85rem;
     }
-
     main {
       padding: 1rem;
       margin-bottom: 4.5rem;
     }
-
     .info {
       background: #020617;
       border: 1px solid #1f2937;
@@ -47,50 +45,13 @@
       color: #facc15;
       margin-bottom: 1rem;
     }
-
     .card {
       background: #020617;
       border: 1px solid #1f2937;
       border-radius: 14px;
-      margin-bottom: 1rem;
-      overflow: hidden;
-    }
-
-    .card-header {
       padding: 1rem;
-      display: flex;
-      justify-content: space-between;
-      cursor: pointer;
-      font-weight: 600;
+      margin-bottom: 1rem;
     }
-
-    .card-content {
-      padding: 0 1rem 1rem;
-      font-size: .9rem;
-      color: #d1d5db;
-      display: none;
-      line-height: 1.5;
-    }
-
-    .card.open .card-content {
-      display: block;
-    }
-
-    .actions {
-      display: flex;
-      gap: .5rem;
-      margin-top: .5rem;
-    }
-
-    .actions button {
-      background: #020617;
-      border: 1px solid #1f2937;
-      color: #e5e7eb;
-      border-radius: 8px;
-      padding: .4rem .6rem;
-      font-size: .8rem;
-    }
-
     nav {
       position: fixed;
       bottom: 0;
@@ -99,7 +60,6 @@
       border-top: 1px solid #1f2937;
       display: flex;
     }
-
     nav button {
       flex: 1;
       padding: .8rem 0;
@@ -108,7 +68,6 @@
       color: #9ca3af;
       font-size: .7rem;
     }
-
     nav button.active {
       color: #facc15;
     }
@@ -118,41 +77,53 @@
 <body>
 <header>
   <h1>Ora et Labora</h1>
-  <p>Terça-feira • 28 de abril de 2026</p>
+  <p id="santo">Carregando santo do dia…</p>
 </header>
 
-<main id="app"></main>
+<main>
+  <div class="card">
+    <h2>📅 Liturgia de Hoje</h2>
+    <p id="data"></p>
+    <p>⛪ Liturgia Católica Romana</p>
+  </div>
+</main>
 
 <nav>
-  <button class="active" onclick="go('leituras', this)">📖<br>Leituras</button>
-  <button onclick="go('oracoes', this)">🙏<br>Orações</button>
-  <button onclick="go('calendario', this)">📅<br>Calendário</button>
-  <button onclick="go('favoritos', this)">⭐<br>Favoritos</button>
-  <button onclick="go('config', this)">⚙️<br>Config</button>
+  <button class="active">📖<br>Leituras</button>
+  <button>🙏<br>Orações</button>
+  <button>📅<br>Calendário</button>
+  <button>⚙️<br>Config</button>
 </nav>
 
 <script>
-const app = document.getElementById("app");
+  // Data
+  document.getElementById("data").innerText =
+    new Date().toLocaleDateString("pt-BR", { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
 
-function go(tela, el) {
-  document.querySelectorAll("nav button").forEach(b => b.classList.remove("active"));
-  el.classList.add("active");
+  // Santo do dia (fonte pública simples)
+  const hoje = new Date().toISOString().split("T")[0];
 
-  if (tela === "leituras") {
-    app.innerHTML = `
-      <div class="info">Modo offline — exibindo dados em cache</div>
+  fetch("https://raw.githubusercontent.com/ldb/martyrology/master/santos.json")
+    .then(r => r.json())
+    .then(lista => {
+      const santo = lista[hoje];
+      if (santo) {
+        document.getElementById("santo").innerText =
+          "🙏 Santo do dia: " + santo;
+        localStorage.setItem("santo_do_dia", santo);
+      } else {
+        usarCache();
+      }
+    })
+    .catch(usarCache);
 
-      <div class="card open">
-        <div class="card-header" onclick="toggle(this)">
-          📖 Leitura • At 8,1b-8
-        </div>
-        <div class="card-content">
-          Naquele dia, começou uma grande perseguição contra a Igreja de Jerusalém...
-          <div class="actions">
-            <button>⭐ Favoritar</button>
-            <button>📋 Copiar</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
+  function usarCache() {
+    const cache = localStorage.getItem("santo_do_dia");
+    document.getElementById("santo").innerText =
+      cache
+        ? "🙏 Santo do dia: " + cache + " (offline)"
+        : "🙏 Santo do dia (offline)";
+  }
+</script>
+</body>
+</html>
