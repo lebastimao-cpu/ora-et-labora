@@ -1,129 +1,160 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <title>Ora et Labora</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#0b1220" />
+<meta charset="UTF-8">
+<title>Ora et Labora</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b1220">
 
-  <!-- PWA -->
-  <link rel="manifest" href="manifest.json">
+<style>
+body {
+  margin: 0;
+  font-family: -apple-system, system-ui;
+  background: #020617;
+  color: #e5e7eb;
+}
+header {
+  text-align: center;
+  padding: 1rem;
+  background: linear-gradient(#0b1220, #020617);
+  border-bottom: 1px solid #1f2937;
+}
+header h1 { margin: 0; font-size: 1.4rem; }
+header p { margin: .3rem 0 0; color: #facc15; font-size: .85rem; }
 
-  <style>
-    body {
-      margin: 0;
-      font-family: -apple-system, system-ui;
-      background: #020617;
-      color: #e5e7eb;
-    }
-    header {
-      padding: 1rem;
-      text-align: center;
-      background: linear-gradient(#0b1220, #020617);
-      border-bottom: 1px solid #1f2937;
-    }
-    header h1 {
-      margin: 0;
-      font-size: 1.4rem;
-      font-weight: 600;
-    }
-    header p {
-      margin: .3rem 0 0;
-      color: #facc15;
-      font-size: .85rem;
-    }
-    main {
-      padding: 1rem;
-      margin-bottom: 4.5rem;
-    }
-    .info {
-      background: #020617;
-      border: 1px solid #1f2937;
-      border-radius: 10px;
-      padding: .7rem;
-      font-size: .8rem;
-      color: #facc15;
-      margin-bottom: 1rem;
-    }
-    .card {
-      background: #020617;
-      border: 1px solid #1f2937;
-      border-radius: 14px;
-      padding: 1rem;
-      margin-bottom: 1rem;
-    }
-    nav {
-      position: fixed;
-      bottom: 0;
-      width: 100%;
-      background: #020617;
-      border-top: 1px solid #1f2937;
-      display: flex;
-    }
-    nav button {
-      flex: 1;
-      padding: .8rem 0;
-      background: none;
-      border: none;
-      color: #9ca3af;
-      font-size: .7rem;
-    }
-    nav button.active {
-      color: #facc15;
-    }
-  </style>
+main {
+  padding: 1rem;
+  margin-bottom: 4.5rem;
+}
+
+.card {
+  background: #020617;
+  border: 1px solid #1f2937;
+  border-radius: 14px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.card h2 {
+  margin-top: 0;
+}
+
+nav {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  display: flex;
+  background: #020617;
+  border-top: 1px solid #1f2937;
+}
+
+nav button {
+  flex: 1;
+  padding: .8rem 0;
+  border: none;
+  background: none;
+  color: #9ca3af;
+  font-size: .7rem;
+}
+
+nav button.active {
+  color: #facc15;
+  font-weight: 600;
+}
+</style>
 </head>
 
 <body>
+
 <header>
   <h1>Ora et Labora</h1>
   <p id="santo">Carregando santo do dia…</p>
 </header>
 
-<main>
-  <div class="card">
-    <h2>📅 Liturgia de Hoje</h2>
-    <p id="data"></p>
-    <p>⛪ Liturgia Católica Romana</p>
-  </div>
-</main>
+<main id="app"></main>
 
 <nav>
-  <button class="active">📖<br>Leituras</button>
-  <button>🙏<br>Orações</button>
-  <button>📅<br>Calendário</button>
-  <button>⚙️<br>Config</button>
+  <button class="active" onclick="trocar('hoje', this)">📖<br>Hoje</button>
+  <button onclick="trocar('liturgia', this)">📜<br>Liturgia</button>
+  <button onclick="trocar('oracoes', this)">🙏<br>Orações</button>
+  <button onclick="trocar('config', this)">⚙️<br>Config</button>
 </nav>
 
 <script>
-  // Data
-  document.getElementById("data").innerText =
-    new Date().toLocaleDateString("pt-BR", { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
+const app = document.getElementById("app");
 
-  // Santo do dia (fonte pública simples)
-  const hoje = new Date().toISOString().split("T")[0];
-
-  fetch("https://raw.githubusercontent.com/ldb/martyrology/master/santos.json")
-    .then(r => r.json())
-    .then(lista => {
-      const santo = lista[hoje];
-      if (santo) {
-        document.getElementById("santo").innerText =
-          "🙏 Santo do dia: " + santo;
-        localStorage.setItem("santo_do_dia", santo);
-      } else {
-        usarCache();
-      }
-    })
-    .catch(usarCache);
-
-  function usarCache() {
-    const cache = localStorage.getItem("santo_do_dia");
+// ✅ Santo do dia (mantido)
+const hoje = new Date().toISOString().split("T")[0];
+fetch("https://raw.githubusercontent.com/ldb/martyrology/master/santos.json")
+  .then(r => r.json())
+  .then(d => {
     document.getElementById("santo").innerText =
-      cache
-        ? "🙏 Santo do dia: " + cache + " (offline)"
-        : "🙏 Santo do dia (offline)";
+      "🙏 Santo do dia: " + (d[hoje] || "—");
+  })
+  .catch(() => {
+    document.getElementById("santo").innerText = "🙏 Santo do dia (offline)";
+  });
+
+function trocar(tela, btn) {
+  document.querySelectorAll("nav button").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+
+  if (tela === "hoje") {
+    app.innerHTML = `
+      <div class="card">
+        <h2>Liturgia de Hoje</h2>
+        <p>${new Date().toLocaleDateString("pt-BR", { weekday:'long', day:'2-digit', month:'long', year:'numeric' })}</p>
+        <p>⛪ Liturgia Católica Romana</p>
+      </div>
+    `;
   }
+
+  if (tela === "liturgia") {
+    app.innerHTML = `
+      <div class="card">
+        <h2>📜 Primeira Leitura</h2>
+        <p><strong>At 8,1b-8</strong></p>
+        <p>(Texto completo disponível via fonte oficial)</p>
+        <button onclick="abrir()">📖 Ler texto completo</button>
+      </div>
+
+      <div class="card">
+        <h2>🎵 Salmo</h2>
+        <p>São homens retos os que seguem o Senhor.</p>
+      </div>
+
+      <div class="card">
+        <h2>📖 Evangelho</h2>
+        <p><strong>Jo 6,35-40</strong></p>
+      </div>
+    `;
+  }
+
+  if (tela === "oracoes") {
+    app.innerHTML = `
+      <div class="card">
+        <h2>Pai Nosso</h2>
+        <p>Pai nosso que estais nos céus,<br>santificado seja o vosso nome…</p>
+      </div>
+    `;
+  }
+
+  if (tela === "config") {
+    app.innerHTML = `
+      <div class="card">
+        <h2>Configurações</h2>
+        <p>Lembretes, tema, informações do app.</p>
+      </div>
+    `;
+  }
+}
+
+function abrir() {
+  window.open("https://liturgia.cancaonova.com/", "_blank");
+}
+
+trocar("hoje", document.querySelector("nav button"));
 </script>
+
 </body>
 </html>
