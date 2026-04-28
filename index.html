@@ -14,13 +14,20 @@ body {
   color: #e5e7eb;
 }
 header {
-  text-align: center;
   padding: 1rem;
+  text-align: center;
   background: linear-gradient(#0b1220, #020617);
   border-bottom: 1px solid #1f2937;
 }
-header h1 { margin: 0; font-size: 1.4rem; }
-header p { margin: .3rem 0 0; color: #facc15; font-size: .85rem; }
+header h1 {
+  margin: 0;
+  font-size: 1.4rem;
+}
+header p {
+  margin: .3rem 0 0;
+  font-size: .85rem;
+  color: #facc15;
+}
 
 main {
   padding: 1rem;
@@ -31,130 +38,24 @@ main {
   background: #020617;
   border: 1px solid #1f2937;
   border-radius: 14px;
-  padding: 1rem;
   margin-bottom: 1rem;
+  overflow: hidden;
 }
 
-.card h2 {
-  margin-top: 0;
-}
-
-nav {
-  position: fixed;
-  bottom: 0;
-  width: 100%;
-  display: flex;
-  background: #020617;
-  border-top: 1px solid #1f2937;
-}
-
-nav button {
-  flex: 1;
-  padding: .8rem 0;
-  border: none;
-  background: none;
-  color: #9ca3af;
-  font-size: .7rem;
-}
-
-nav button.active {
-  color: #facc15;
+.card-header {
+  padding: 1rem;
+  cursor: pointer;
   font-weight: 600;
-}
-</style>
-</head>
-
-<body>
-
-<header>
-  <h1>Ora et Labora</h1>
-  <p id="santo">Carregando santo do dia…</p>
-</header>
-
-<main id="app"></main>
-
-<nav>
-  <button class="active" onclick="trocar('hoje', this)">📖<br>Hoje</button>
-  <button onclick="trocar('liturgia', this)">📜<br>Liturgia</button>
-  <button onclick="trocar('oracoes', this)">🙏<br>Orações</button>
-  <button onclick="trocar('config', this)">⚙️<br>Config</button>
-</nav>
-
-<script>
-const app = document.getElementById("app");
-
-// ✅ Santo do dia (mantido)
-const hoje = new Date().toISOString().split("T")[0];
-fetch("https://raw.githubusercontent.com/ldb/martyrology/master/santos.json")
-  .then(r => r.json())
-  .then(d => {
-    document.getElementById("santo").innerText =
-      "🙏 Santo do dia: " + (d[hoje] || "—");
-  })
-  .catch(() => {
-    document.getElementById("santo").innerText = "🙏 Santo do dia (offline)";
-  });
-
-function trocar(tela, btn) {
-  document.querySelectorAll("nav button").forEach(b => b.classList.remove("active"));
-  btn.classList.add("active");
-
-  if (tela === "hoje") {
-    app.innerHTML = `
-      <div class="card">
-        <h2>Liturgia de Hoje</h2>
-        <p>${new Date().toLocaleDateString("pt-BR", { weekday:'long', day:'2-digit', month:'long', year:'numeric' })}</p>
-        <p>⛪ Liturgia Católica Romana</p>
-      </div>
-    `;
-  }
-
-  if (tela === "liturgia") {
-    app.innerHTML = `
-      <div class="card">
-        <h2>📜 Primeira Leitura</h2>
-        <p><strong>At 8,1b-8</strong></p>
-        <p>(Texto completo disponível via fonte oficial)</p>
-        <button onclick="abrir()">📖 Ler texto completo</button>
-      </div>
-
-      <div class="card">
-        <h2>🎵 Salmo</h2>
-        <p>São homens retos os que seguem o Senhor.</p>
-      </div>
-
-      <div class="card">
-        <h2>📖 Evangelho</h2>
-        <p><strong>Jo 6,35-40</strong></p>
-      </div>
-    `;
-  }
-
-  if (tela === "oracoes") {
-    app.innerHTML = `
-      <div class="card">
-        <h2>Pai Nosso</h2>
-        <p>Pai nosso que estais nos céus,<br>santificado seja o vosso nome…</p>
-      </div>
-    `;
-  }
-
-  if (tela === "config") {
-    app.innerHTML = `
-      <div class="card">
-        <h2>Configurações</h2>
-        <p>Lembretes, tema, informações do app.</p>
-      </div>
-    `;
-  }
+  display: flex;
+  justify-content: space-between;
 }
 
-function abrir() {
-  window.open("https://liturgia.cancaonova.com/", "_blank");
+.card-content {
+  padding: 0 1rem 1rem;
+  font-size: .9rem;
+  color: #d1d5db;
+  line-height: 1.5;
+  display: none;
 }
 
-trocar("hoje", document.querySelector("nav button"));
-</script>
-
-</body>
-</html>
+.card.open .card-content {
