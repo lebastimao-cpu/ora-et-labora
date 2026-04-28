@@ -46,8 +46,6 @@ main {
   padding: 1rem;
   cursor: pointer;
   font-weight: 600;
-  display: flex;
-  justify-content: space-between;
 }
 
 .card-content {
@@ -59,3 +57,47 @@ main {
 }
 
 .card.open .card-content {
+  display: block;
+}
+
+nav {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background: #020617;
+  border-top: 1px solid #1f2937;
+  display: flex;
+}
+
+nav button {
+  flex: 1;
+  padding: .8rem 0;
+  border: none;
+  background: none;
+  color: #9ca3af;
+  font-size: .7rem;
+}
+
+nav button.active {
+  color: #facc15;
+  font-weight: 600;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>Ora et Labora</h1>
+  <p>Liturgia Católica • Hoje</p>
+</header>
+
+<main id="app"></main>
+
+<nav>
+  <button class="active" onclick="trocar('hoje', this)">🏠<br>Hoje</button>
+  <button onclick="trocar('oracoes', this)">🙏<br>Orações</button>
+  <button onclick="trocar('config', this)">⚙️<br>Config</button>
+</nav>
+
+<script>
